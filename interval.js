@@ -40,6 +40,8 @@
 		this.add = add;
 		this.mult = mult;
 		this.toString = toString;
+		this.toEnglish = toEnglish;
+		this.getMinutes = getMinutes;
 
 		// properties
 		this._seconds = 0;
@@ -126,6 +128,10 @@
 		return out;
 	}
 
+	function getMinutes() {
+		return this._seconds / 60;
+	}
+
 	function toString() {
 		if (!this._seconds && !this._days && !this._months) return '00:00:00';
 
@@ -166,6 +172,47 @@
 		return out;
 	}
 
+	function toEnglish() {
+
+		if (this._months) {
+			throw 'months is not (yet) supported';
+		}
+		if (this._days) {
+			throw 'days is not (yet) supported';
+		}
+
+		var out = '';
+		if (this._seconds) {
+
+			var hours = (Math.floor((this._seconds / 60) / 60)) + '';
+			var minutes = (Math.floor(this._seconds / 60) % 60) + '';
+			var seconds = (this._seconds % 60) + '';
+
+			if (hours.length == 1) hours = '0' + hours;
+			if (minutes.length == 1) minutes = '0' + minutes;
+			if (seconds.length == 1) seconds = '0' + seconds;
+
+			if (hours != '00') {
+				if (hours == '01') {
+					out += hours + 'hr';
+				} else {
+					out += hours + 'hrs';
+				}
+			}
+
+			if (minutes != '00') {
+				if (out.length) out += ' ';
+				out += minutes + 'min';
+			}
+
+			if (seconds != '00') {
+				if (out.length) out += ' ';
+				out += seconds + 's';
+			}
+		}
+		return out;
+	}
+
 	function _from_dates(a, b) {
 		// distance between two dates will create days and seconds. never months!
 		this._months = 0;
@@ -190,21 +237,41 @@
 		this._days = 0;
 		this._seconds = 0;
 
+		txt = txt.replace(/\s+$/, '');
+		txt = txt.replace(/^\s+/, '');
+
 		var chunks = txt.split(' ');
 
 		var i, v, u;
 
 		for (i = 0; i < chunks.length; i++) {
 			if (chunks[i].indexOf(':') != -1) {
-				// try to parse time segment
-				// croak for now TODO support this
-				throw 'time intervals not yet implemented';
-			} else if (i == chunks.length - 1) {
-				_parse_throw(txt);
+
+				var s = chunks[i].split(':');
+				if (s.length != 3) {
+					throw 'time intervals not in the form 00:00:00 not yet implemented';
+				}
+
+				this._seconds += pInt(s[0]) * 60 * 60;
+				this._seconds += pInt(s[1]) * 60;
+				this._seconds += pInt(s[2]);
+
 			} else {
 				v = chunks[i];
 				u = chunks[i + 1];
 				i++;
+
+				if (/[a-z]$/.test(v)) {
+					v = v.replace(/^(\d+)([a-z]+)$/, '$1 $2');
+					var tmp = v.split(' ');
+					v = tmp[0];
+					u = tmp[1];
+					i--;
+				}
+
+				if (i == chunks.length && !u) {
+					u = 's';
+				}
 
 				// first chunk must be number
 				if (!_test_number(v)) _parse_throw(txt);
