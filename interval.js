@@ -29,6 +29,7 @@
  * */
 
 (function() {
+	"use strict";
 	window.Interval = Interval;
 
 	function Interval(a, b) {
