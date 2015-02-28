@@ -30,6 +30,7 @@
 
 (function() {
 	"use strict";
+	/*jshint validthis:true */
 	window.Interval = Interval;
 
 	function Interval(a, b) {
@@ -174,15 +175,16 @@
 	}
 
 	function toEnglish() {
+		var out = '';
 
 		if (this._months) {
 			throw 'months is not (yet) supported';
 		}
 		if (this._days) {
-			throw 'days is not (yet) supported';
+			if (out.length) out += ' ';
+			out += _plural(this._days, 'day');
 		}
 
-		var out = '';
 		if (this._seconds) {
 
 			var hours = (Math.floor((this._seconds / 60) / 60)) + '';
@@ -195,7 +197,7 @@
 
 			if (hours != '00') {
 				if (hours == '01') {
-					out += hours + 'hr';
+					out += '1hr';
 				} else {
 					out += hours + 'hrs';
 				}
